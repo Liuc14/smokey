@@ -1457,9 +1457,10 @@ clawIntake(127);
 
 }
 void pidTest() {}
-void utilTest() {Claw.open();
-				pros::delay(1000);
-				Claw.close();}
+void utilTest() {liftTarget = 10000;
+pros::delay(2000);
+
+liftTarget = 2000;}
 //string for the names of our autonomous list, used to display which auton is selected for both controller and brain selector.
 const char* autonomousNames[] = {
     "CloseSplit",
@@ -1473,7 +1474,7 @@ const char* autonomousNames[] = {
 };
 
 //int determines which auton is ran.
-int selectedAuton =6;
+int selectedAuton =2;
 
 //case function which runs different autonomous routines based off the value of selectedAuton
 void chooseAuton() {
@@ -1534,7 +1535,7 @@ void screenSelector() {
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
-  //  Claw.open();
+   // Claw.open();
     //set chassis motor configuration
     left_motor_group.set_gearing({pros::MotorGears::blue, pros::MotorGears::blue});
     right_motor_group.set_gearing({pros::MotorGears::blue, pros::MotorGears::blue});
@@ -1667,8 +1668,7 @@ int intakeOldSpeed;
     clawIntake(0);
      Claw.open();
  } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-// intake(127);
-	 togglePiston.set_value(true);
+ intake(127);
  }
  else if (buttonRight) {
         rollerIntake.move(127);
@@ -1679,8 +1679,7 @@ int intakeOldSpeed;
     Claw.open();
     clawIntake(127);
  } else if (l2) {
-//  intake(-127);
-	 rollerPiston.set_value(true);
+  intake(-127);
  } else {
     togglePiston.set_value(false);
     rollerIntake.move(0);
