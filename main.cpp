@@ -1457,10 +1457,9 @@ clawIntake(127);
 
 }
 void pidTest() {}
-void utilTest() {liftTarget = 10000;
-pros::delay(2000);
-
-liftTarget = 2000;}
+void utilTest() {Claw.open();
+				pros::delay(1000);
+				Claw.close();}
 //string for the names of our autonomous list, used to display which auton is selected for both controller and brain selector.
 const char* autonomousNames[] = {
     "CloseSplit",
@@ -1474,7 +1473,7 @@ const char* autonomousNames[] = {
 };
 
 //int determines which auton is ran.
-int selectedAuton =2;
+int selectedAuton =6;
 
 //case function which runs different autonomous routines based off the value of selectedAuton
 void chooseAuton() {
