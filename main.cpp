@@ -1535,7 +1535,7 @@ void screenSelector() {
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
-    Claw.open();
+  //  Claw.open();
     //set chassis motor configuration
     left_motor_group.set_gearing({pros::MotorGears::blue, pros::MotorGears::blue});
     right_motor_group.set_gearing({pros::MotorGears::blue, pros::MotorGears::blue});
