@@ -1669,7 +1669,7 @@ int intakeOldSpeed;
      Claw.open();
  } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
 // intake(127);
-togglePiston.set_value(true);
+	 togglePiston.set_value(true);
  }
  else if (buttonRight) {
         rollerIntake.move(127);
@@ -1681,11 +1681,11 @@ togglePiston.set_value(true);
     clawIntake(127);
  } else if (l2) {
  // intake(-127);
- rollerPiston.set_value(true);
+	 rollerPiston.set_value(true);
  } else {
     togglePiston.set_value(false);
     rollerIntake.move(0);
-    Claw.close();
+    Claw.open();
     lift.move(0);
     intake(0);
     rollerPiston.set_value(false);
