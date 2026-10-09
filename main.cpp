@@ -1666,7 +1666,7 @@ int intakeOldSpeed;
  } else if (buttonDown) {
         clawIndexBool = false;
     clawIntake(0);
-     Claw.open();
+     Claw.close();
  } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
 // intake(127);
 	 togglePiston.set_value(true);
@@ -1677,7 +1677,7 @@ int intakeOldSpeed;
  } else if (buttonB == true) {
     clawIntake(127);
  } else if (buttonY) {
-    Claw.open();
+    Claw.close();
     clawIntake(127);
  } else if (l2) {
 //  intake(-127);
