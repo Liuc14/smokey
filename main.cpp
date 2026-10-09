@@ -1666,7 +1666,7 @@ int intakeOldSpeed;
  } else if (buttonDown) {
         clawIndexBool = false;
     clawIntake(0);
-     Claw.close();
+     Claw.open();
  } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
 // intake(127);
 	 togglePiston.set_value(true);
@@ -1677,7 +1677,7 @@ int intakeOldSpeed;
  } else if (buttonB == true) {
     clawIntake(127);
  } else if (buttonY) {
-    Claw.close();
+    Claw.open();
     clawIntake(127);
  } else if (l2) {
 //  intake(-127);
@@ -1685,7 +1685,7 @@ int intakeOldSpeed;
  } else {
     togglePiston.set_value(false);
     rollerIntake.move(0);
-    Claw.open();
+    Claw.close();
     lift.move(0);
     intake(0);
     rollerPiston.set_value(false);
