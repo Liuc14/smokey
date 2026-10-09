@@ -1680,7 +1680,7 @@ int intakeOldSpeed;
     Claw.open();
     clawIntake(127);
  } else if (l2) {
- // intake(-127);
+//  intake(-127);
 	 rollerPiston.set_value(true);
  } else {
     togglePiston.set_value(false);
