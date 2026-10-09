@@ -49,10 +49,10 @@ pros::adi::DigitalOut rollerPiston('A');
 //claw structure for piston commands.
 struct Claw_t {
     void open() {
-clawPiston.set_value(false); 
+clawPiston.set_value(true); 
     }
     void close() {
-clawPiston.set_value(true);            
+clawPiston.set_value(false);            
          }
 
 
@@ -1685,7 +1685,7 @@ togglePiston.set_value(true);
  } else {
     togglePiston.set_value(false);
     rollerIntake.move(0);
-    Claw.open();
+    Claw.close();
     lift.move(0);
     intake(0);
     rollerPiston.set_value(false);
