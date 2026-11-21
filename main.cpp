@@ -34,7 +34,7 @@ pros::Distance distanceRight(15);
 pros::Distance distanceLeft(8);
 pros::Distance distanceBack(7);
 //distance sensor on claw for auto clamp
-pros::Distance distanceClaw(21);
+pros::Distance distanceClaw(14);
 //side roller motor constructor
 pros::Motor rollerIntake(0, pros::MotorGears::green);
 pros::Motor frontIntake(0, pros::MotorGear::blue);
@@ -45,7 +45,7 @@ pros::MotorGroup lift({-1, 2, 10}, pros::MotorGears::green);
 //double flipper motor constructor
 pros::Motor flipper(3, pros::MotorGears::green);
 //piston to open claw for grabbing cups and pins
-pros::adi::DigitalOut clawPiston('A');
+pros::adi::DigitalOut clawPiston('A', false);
 pros::adi::DigitalOut togglePiston('B');
 pros::adi::DigitalOut rollerPiston('C');
 //macro definition to shorten the call for chassis.waitUntilDone for auto movements
@@ -262,20 +262,23 @@ void clawIntake(int speed) {
 
 //Auto claw section
 bool autoClaw = false;
-
+bool slowClamp = false;
 void autoClamp() { 
-    //opens claw and sets a condition to wait while the distance sensor isn't detecting an object in range, and clamps when object is officially in range. After logic, exits loop.
-          Claw.open();
-    pros::delay(1000);
-    if (autoClaw == true) {
-  
-        while (distanceClaw.get_distance() > 100) {
-            pros::delay(10);
+    while (true) {
+        if (autoClaw) {
+            const std::int32_t distance = distanceClaw.get_distance();
+            if (distance >= 0 && distance <= 125) {
+                Claw.close();
+                pros::delay(150);
+                liftTarget = 20000;
+                autoClaw = false;
+            }
         }
-    Claw.close();
-    autoClaw = false;
+
+        pros::delay(10);
     }
 }
+
 //set toggle state for claw intake movement for drivercontrol
 bool clawState = false;
 void setClawIntakeState() {
@@ -294,6 +297,7 @@ void CloseSplitWall() {
   resetFront();
   resetLeft();
   togglePiston.set_value(true);
+  pros::delay(300);
   moveToPoint(52.75, chassis.getPose().y, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
   waitd;
   togglePiston.set_value(false);
@@ -352,10 +356,10 @@ liftTarget = 0;
 moveToPoint(50, -11, 1500, {.maxSpeed = 100});
 waitd;
 liftTarget=0;
-turnToPoint(65.5, -20, 600, {.forwards = false});
+turnToPoint(65.5, -21, 600, {.forwards = false});
 waitd;
 
-moveToPoint(65.5, -20, 1250, {.forwards = false, .maxSpeed = 60});
+moveToPoint(65.5, -21, 1250, {.forwards = false, .maxSpeed = 60});
 waitd;
 
 chassis.arcade(-100, -20);
@@ -381,35 +385,33 @@ Claw.open();
 pros::delay(200);
 }
 void CloseSplitLane() {
-    setPose(56, 2, 90);
+   setPose(56, 2, 90);
   resetFront();
   resetLeft();
   togglePiston.set_value(true);
-  pros::delay(200);
-
-  moveToPoint(52.5, chassis.getPose().y, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
+  pros::delay(400);
+  moveToPoint(53, chassis.getPose().y, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
   waitd;
   togglePiston.set_value(false);
 liftTarget = 30000;
-
   turnToPoint(49, 24, 750, {.forwards = false, .minSpeed = 10, .earlyExitRange= 10});
   waitd;
 
-  moveToPoint(49, 24, 800, {.forwards =false, .maxSpeed = 70});
+  moveToPoint(49, 24, 700, {.forwards =false, .maxSpeed = 70});
   waitd;
 liftTarget = 0;
-pros::delay(400);
+pros::delay(250);
 Claw.open();
-pros::delay(200);
+pros::delay(150);
 
-moveToPoint(48, 12, 800, {.maxSpeed = 110});
+moveToPoint(51, 12, 800);
+waitd;
+liftTarget =6000;
+turnToPoint(25, 29.5, 500, {.forwards = false});
 waitd;
 
-turnToPoint(25, 29, 500, {.forwards = false});
-waitd;
-
-moveToPoint(25, 29, 900, {.forwards = false, .maxSpeed = 60});
-chassis.waitUntil(17.5);
+moveToPoint(25, 29.5, 1100, {.forwards = false, .maxSpeed = 60});
+chassis.waitUntil(19.75);
 Claw.close();
 pros::delay(100);
 liftTarget = 12500;
@@ -421,26 +423,25 @@ liftTarget = 50000;
 moveToPoint(48, 30, 900, {.forwards = false, .maxSpeed = 80});
 waitd;
 
-liftTarget = 25000;
+liftTarget = 30000;
 pros::delay(400);
 Claw.open();
 pros::delay(200);
-liftTarget = 0;
+liftTarget = 4000;
 
 
-moveToPoint(36, 29, 850, {.maxSpeed = 90});
+moveToPoint(36, 29, 900, {.maxSpeed = 90});
 waitd;
 
-turnToPoint(51.25, 51, 550, {.forwards = false});
+turnToPoint(52, 51, 600, {.forwards = false});
 waitd;
 
-moveToPoint(51.25, 51, 1250, {.forwards =false, .maxSpeed = 65});
-chassis.waitUntil(24);
+moveToPoint(52, 51, 1250, {.forwards =false, .maxSpeed = 55});
+chassis.waitUntil(19);
 Claw.close();
 pros::delay(100);
-liftTarget = 12500;
+liftTarget = 20000;
 waitd;
-
 moveToPoint(28, 27, 1000);
 waitd;
 
@@ -448,7 +449,7 @@ turnToPoint(54, -20, 800, {.forwards =false, .direction = AngularDirection::CW_C
 liftTarget = 75000;
 waitd;
 
-moveToPoint(54, -20, 1250, {.forwards = false, .maxSpeed = 80});
+moveToPoint(54, -20, 1500, {.forwards = false, .maxSpeed = 70});
 waitd;
 
 liftTarget = 35000;
@@ -460,10 +461,14 @@ liftTarget = 0;
 }
 
 void CloseElim4() {
+
+    
+    /*
 setPose(56, 2, 90);
   resetFront();
   resetLeft();
   togglePiston.set_value(true);
+  pros::delay(300);
   moveToPoint(52.75, chassis.getPose().y, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
   waitd;
   togglePiston.set_value(false);
@@ -563,6 +568,10 @@ pros::delay(400);
 Claw.open();
 pros::delay(200);
 liftTarget = 0;
+*/
+
+
+
 /*
 moveToPoint(54, 44, 800, {.maxSpeed = 110});
 waitd;
@@ -600,12 +609,12 @@ waitd;
 
 
 void CloseElim() { 
-  setPose(56, 2, 90);
+ setPose(56, 2, 90);
   resetFront();
   resetLeft();
   togglePiston.set_value(true);
-  pros::delay(200);
-  moveToPoint(53, chassis.getPose().y, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
+  pros::delay(400);
+  moveToPoint(52.25, chassis.getPose().y, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
   waitd;
   togglePiston.set_value(false);
 liftTarget = 30000;
@@ -621,15 +630,18 @@ pros::delay(150);
 
 moveToPoint(51, 12, 800);
 waitd;
-liftTarget =0;
-turnToPoint(25.75, 29, 500, {.forwards = false});
+liftTarget =8000;
+turnToPoint(23, 29.5, 700, {.forwards = false});
 waitd;
+autoClaw=true;
 
-moveToPoint(25.75, 29, 900, {.forwards = false, .maxSpeed = 60});
-chassis.waitUntil(19.25);
+moveToPoint(23, 29.5, 1100, {.forwards = false, .maxSpeed = 56});
+/*
+chassis.waitUntil(21.5);
 Claw.close();
 pros::delay(100);
 liftTarget = 12500;
+*/
 waitd;
 
 turnToPoint(48, 30, 750, {.forwards =false, .direction = AngularDirection::CW_CLOCKWISE, .minSpeed = 5, .earlyExitRange = 10});
@@ -638,45 +650,44 @@ liftTarget = 50000;
 moveToPoint(48, 30, 900, {.forwards = false, .maxSpeed = 80});
 waitd;
 
-liftTarget = 25000;
+liftTarget = 30000;
 pros::delay(400);
 Claw.open();
 pros::delay(200);
-liftTarget = 0;
+liftTarget = 6000;
 
 
-moveToPoint(36, 29, 850, {.maxSpeed = 90});
+moveToPoint(36, 29, 900, {.maxSpeed = 90});
 waitd;
 
-turnToPoint(52, 51, 550, {.forwards = false});
+turnToPoint(52, 51, 600, {.forwards = false});
 waitd;
-
-moveToPoint(52, 51, 1250, {.forwards =false, .maxSpeed = 65});
-chassis.waitUntil(23);
+autoClaw=true;
+moveToPoint(52, 51, 1250, {.forwards =false, .maxSpeed = 59});
+/*
+chassis.waitUntil(21);
 Claw.close();
 pros::delay(100);
-liftTarget = 12500;
+liftTarget = 20000;
+*/
 waitd;
 
-turnToPoint(58, 30, 800, {.forwards =false, .direction = AngularDirection::CW_CLOCKWISE, .minSpeed = 10, .earlyExitRange = 15});
+turnToPoint(54, 30, 800, {.forwards =false, .direction = AngularDirection::CW_CLOCKWISE, .minSpeed = 10, .earlyExitRange = 15});
 liftTarget = 80000;
 waitd;
 
-moveToPoint(56, 30, 900, {.forwards = false, .maxSpeed = 50});
+moveToPoint(54, 30, 900, {.forwards = false, .maxSpeed = 50});
 waitd;
 
-liftTarget = 40000;
-pros::delay(400);
+liftTarget = 50000;
+pros::delay(700);
 Claw.open();
-pros::delay(200);
-liftTarget = 0;
+pros::delay(400);
+//liftTarget = 0;
 
 
-
-
-
-
-
+moveToPoint(48, 48, 1000, {.maxSpeed = 80});
+waitd;   
 
 
 }
@@ -686,8 +697,8 @@ void FarSplitLane() {
   resetFront();
   resetLeft();
   togglePiston.set_value(true);
-  pros::delay(200);
-  moveToPoint(chassis.getPose().x, 52.5, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
+  pros::delay(300);
+  moveToPoint(chassis.getPose().x, 52.25, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
   waitd;
   togglePiston.set_value(false);
 liftTarget = 30000;
@@ -763,7 +774,7 @@ void FarSplitWall() {
     resetFront();
   resetLeft();
   togglePiston.set_value(true);
-  pros::delay(200);
+  pros::delay(300);
   moveToPoint(chassis.getPose().x, 52.5, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
   waitd;
   togglePiston.set_value(false);
@@ -858,7 +869,7 @@ void FarElim() {
   resetFront();
   resetLeft();
   togglePiston.set_value(true);
-  pros::delay(200);
+  pros::delay(300);
   moveToPoint(chassis.getPose().x, 53, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
   waitd;
   togglePiston.set_value(false);
@@ -932,38 +943,67 @@ pros::delay(200);
 
 
 }
+void utilTest() {
+setPose(56, 2, 90);
+  resetFront();
+  resetLeft();
+  togglePiston.set_value(true);
+  pros::delay(400);
+  moveToPoint(52.25, chassis.getPose().y, 1000, {.forwards = false, .minSpeed = 5, .earlyExitRange = 2});
+  waitd;
+  togglePiston.set_value(false);
+liftTarget = 30000;
+  turnToPoint(49, 24, 750, {.forwards = false, .minSpeed = 10, .earlyExitRange= 10});
+  waitd;
+
+  moveToPoint(49, 24, 700, {.forwards =false, .maxSpeed = 70});
+  waitd;   
+liftTarget = 0;
+pros::delay(250);
+Claw.open();
+pros::delay(150);
+
+moveToPoint(51, 12, 800);
+waitd;
+
+}
+
 void Skills() {
+   // utilTest();
+    autoClaw = false;
 CloseElim();
 //setPose(0, 0,0);
 turnToAngle(0, 700);
 waitd;
+
 resetRight();
 resetFront();
 Claw.open();
+liftTarget = 0;
 pros::delay(200);
 //liftRotationSensor.set_position(9500);
-moveToPoint(51, 59.5, 1250, {.maxSpeed = 110});
+moveToPoint(51, 60, 1250, {.maxSpeed = 110});
 waitd;
 
-turnToPoint(62, 59, 750, {.forwards = false});
+turnToPoint(64, 60, 750, {.forwards = false});
 waitd;
 
-moveToPoint(62, 59, 600, {.forwards = false, .maxSpeed = 90});
+moveToPoint(64, 60, 600, {.forwards = false, .maxSpeed = 90});
 waitd;
 
-pros::delay(300);
+pros::delay(200);
 Claw.close();
-pros::delay(150);
-liftTarget = 7500;
-
-moveToPoint(51, 60, 1250, {.maxSpeed = 100});
+pros::delay(100);
+liftTarget = 15000;
+pros::delay(100);
+moveToPoint(50, 60, 1250, {.maxSpeed = 100});
 waitd;
 
-turnToPoint(49.5, 28, 700, {.forwards = false});
+turnToPoint(50, 28, 700, {.forwards = false});
 liftTarget = 90000;
 waitd;
 
-moveToPoint(49, 28, 1500, {.forwards = false, .maxSpeed = 50});
+moveToPoint(50, 28, 1500, {.forwards = false, .maxSpeed = 50});
 waitd;
 
 liftTarget = 70000;
@@ -976,30 +1016,31 @@ waitd;
 resetRight();
 resetFront();
 Claw.open();
-moveToPoint(51, 59.5, 1250, {.maxSpeed = 100});
+moveToPoint(51, 61.5, 1250, {.maxSpeed = 100});
 pros::delay(300);
 liftTarget = 0;
 waitd;
 
-turnToPoint(61, 59, 750, {.forwards = false});
+turnToPoint(64, 60, 750, {.forwards = false});
 waitd;
 
-moveToPoint(61, 59, 600, {.forwards = false, .maxSpeed = 90});
+moveToPoint(64, 60, 600, {.forwards = false, .maxSpeed = 90});
 waitd;
 
 pros::delay(300);
 Claw.close();
-pros::delay(150);
-liftTarget = 7500;
+pros::delay(100);
+liftTarget = 12500;
+pros::delay(100);
 
-moveToPoint(51, 60, 1250, {.maxSpeed = 100});
+moveToPoint(50, 60, 1250, {.maxSpeed = 100});
 waitd;
 
-turnToPoint(49, 28, 700, {.forwards = false});
+turnToPoint(50, 28, 700, {.forwards = false});
 liftTarget = 115000;
 waitd;
 
-moveToPoint(49, 28, 1500, {.forwards = false, .maxSpeed = 50});
+moveToPoint(50, 28, 1500, {.forwards = false, .maxSpeed = 50});
 waitd;
 liftTarget = 85000;
 pros::delay(400);
@@ -1011,15 +1052,15 @@ waitd;
 resetRight();
 resetFront();
 Claw.open();
-moveToPoint(50, 59.5, 1250, {.maxSpeed = 110});
+moveToPoint(50, 59, 1250, {.maxSpeed = 110});
 pros::delay(300);
 liftTarget = 0;
 waitd;
 
-turnToPoint(62, 59, 750, {.forwards = false});
+turnToPoint(64, 59, 750, {.forwards = false});
 waitd;
 
-moveToPoint(62, 59, 600, {.forwards = false, .maxSpeed = 90});
+moveToPoint(64, 59, 600, {.forwards = false, .maxSpeed = 90});
 waitd;
 
 pros::delay(400);
@@ -1037,14 +1078,14 @@ waitd;
 resetLeft();
 resetFront();
 
-moveToPoint(24, 50, 800, {.forwards = false, .maxSpeed = 70});
+moveToPoint(24, 54, 800, {.forwards = false, .maxSpeed = 70});
 waitd;
 liftTarget = 0;
 pros::delay(400);
 Claw.open();
 pros::delay(200);
 ////////////////////////////////// NEW STACK
-moveToPoint(45, 61.5, 1500, {.maxSpeed = 110});
+moveToPoint(45, 62, 1500, {.maxSpeed = 110});
 waitd;
 
 turnToAngle(270, 750);
@@ -1052,7 +1093,7 @@ waitd;
 
 resetRight();
 
-moveToPoint(61, 58, 800, {.forwards = false, .maxSpeed = 90});
+moveToPoint(61, 62, 800, {.forwards = false, .maxSpeed = 90});
 waitd;
 
 pros::delay(400);
@@ -1064,27 +1105,28 @@ moveToPoint(48, 56, 1000, {.maxSpeed = 100});
 waitd;
 liftTarget = 47500;
 
-turnToPoint(23, 52, 750, {.forwards = false, .minSpeed = 5, .earlyExitRange = 10});
+turnToPoint(19, 56, 800, {.forwards = false, .minSpeed = 5, .earlyExitRange = 10});
 waitd;
 
-moveToPoint(23, 52, 800, {.forwards = false, .maxSpeed = 70});
+moveToPoint(19, 56, 850, {.forwards = false, .maxSpeed = 70});
 waitd;
 liftTarget = 25000;
 pros::delay(400);
 Claw.open();
 pros::delay(200);
-////////////
+////////////////////////////
 moveToPoint(45, 62, 1500, {.maxSpeed = 110});
 pros::delay(300);
 liftTarget = 0;
 waitd;
 
-turnToAngle(270, 750);
+turnToAngle(-90, 850);
 waitd;
 
 resetRight();
 
-moveToPoint(60, 58.5, 800, {.forwards = false, .maxSpeed = 90});
+
+moveToPoint(60, 62, 900, {.forwards = false, .maxSpeed = 90});
 waitd;
 
 pros::delay(400);
@@ -1097,17 +1139,17 @@ moveToPoint(46, 54, 1000, {.maxSpeed = 100});
 waitd;
 liftTarget = 75000;
 
-turnToPoint(23, 52.5, 750, {.forwards = false});
+turnToPoint(19, 56, 750, {.forwards = false});
 waitd;
 
-moveToPoint(23, 52.5, 800, {.forwards = false, .maxSpeed = 70});
+moveToPoint(19, 56, 800, {.forwards = false, .maxSpeed = 70});
 waitd;
 liftTarget = 50000;
 pros::delay(600);
 Claw.open();
 pros::delay(200);
 ////////////////////////////////////////////////////////
-moveToPoint(45.5, 62.5, 1500, {.maxSpeed = 110});
+moveToPoint(45.5, 62, 1500, {.maxSpeed = 110});
 pros::delay(400);
 liftTarget = 0;
 waitd;
@@ -1117,7 +1159,7 @@ waitd;
 
 resetRight();
 
-moveToPoint(60, 57.75, 800, {.forwards = false, .maxSpeed = 90});
+moveToPoint(60, 62, 800, {.forwards = false, .maxSpeed = 90});
 waitd;
 
 pros::delay(400);
@@ -1125,7 +1167,7 @@ Claw.close();
 pros::delay(150);
 liftTarget = 7500;
 
-moveToPoint(46, 50, 1500, {.maxSpeed = 100});
+moveToPoint(46, 52, 1500, {.maxSpeed = 100});
 pros::delay(300);
 liftTarget = 105000;
 waitd;
@@ -1136,7 +1178,7 @@ waitd;
 resetLeft();
 resetFront();
 
-moveToPoint(23, 54, 850, {.forwards = false, .maxSpeed = 50});
+moveToPoint(19, 54, 850, {.forwards = false, .maxSpeed = 50});
 waitd;
 liftTarget = 45000;
 pros::delay(800);
@@ -1145,7 +1187,7 @@ pros::delay(200);
 ///////////
 
 
-moveToPoint(45, 61.5, 1500, {.maxSpeed = 110});
+moveToPoint(45, 62, 1500, {.maxSpeed = 110});
 pros::delay(400);
 liftTarget = 0;
 waitd;
@@ -1155,7 +1197,7 @@ waitd;
 
 resetRight();
 
-moveToPoint(60, 58.45, 800, {.forwards = false, .maxSpeed = 90});
+moveToPoint(60, 63, 800, {.forwards = false, .maxSpeed = 90});
 waitd;
 
 pros::delay(400);
@@ -1164,17 +1206,17 @@ pros::delay(150);
 liftTarget = 7500;
 
 
-moveToPoint(50, 56, 1500, {.maxSpeed = 100});
+moveToPoint(50, 62, 1500, {.maxSpeed = 100});
 waitd;
-
+/*
 resetRight();
 
-turnToPoint(-11, 6, 700, {.forwards = false});
+turnToPoint(-11, 10, 700, {.forwards = false});
 waitd;
 liftTarget  = 50000;
 
 
-moveToPoint(-11, 6, 1800, {.forwards = false,.maxSpeed = 110});
+moveToPoint(-11, 10, 1800, {.forwards = false,.maxSpeed = 110});
 waitd;
 
 liftTarget = 20000;
@@ -1183,7 +1225,7 @@ Claw.open();
 pros::delay(200);
 
 liftTarget =40000;
-
+*/
 moveToPoint(-2, 84, 1500);
 pros::delay(200);
 liftTarget = 0;
@@ -1204,31 +1246,191 @@ waitd;
 
 }
 
-void closeAwp() {
-    setPose(56, 2, 270);
-  
-}
-void pidTest() {}
-void utilTest() {setPose(0, 0, 0);
-resetFront();
-resetRight();
+void closeWall3() {
+ setPose(56, 2, 90);
+  resetFront();
+  resetLeft();
+  togglePiston.set_value(true);
+  pros::delay(200);
+  moveToPoint(52, 28, 700, {.forwards = false, .maxSpeed =110});
+  liftTarget = 25000;
+  waitd;
+  togglePiston.set_value(false);
+
+liftTarget = 2000;
+pros::delay(250);
+Claw.open();
+pros::delay(150);
+
+moveToPoint(54, 14, 800);
+waitd;
+
+turnToPoint(58, 18.25, 500, {.forwards = false});
+waitd;
+
+
+chassis.arcade(-65, 25);
+pros::delay(850);
+
+Claw.close();
+chassis.arcade(0,0);
+liftTarget = 37500;
+
+turnToPoint(56, 8, 550, {.minSpeed =10});
+waitd;
+
+moveToPoint(56, 8, 700);
+waitd;
+
+turnToPoint(52, 22, 500, {.forwards =false});
+waitd;
+
+moveToPoint(52, 22, 600, {.forwards = false, .maxSpeed = 80});
+waitd;
+liftTarget = 20000;
+turnToPoint(56, -13, 750);
+pros::delay(200);
+Claw.open();
+pros::delay(150);
+waitd;
+
+moveToPoint(56.5, -13, 1000);
+waitd;
+
+liftTarget = 2000;
+turnToPoint(64, -25, 800, {.forwards =false, .direction = AngularDirection::CCW_COUNTERCLOCKWISE});
+waitd;
+
+chassis.arcade(-60, -20);
+pros::delay(900);
+
+Claw.close();
+chassis.arcade(0,0);
+liftTarget = 20000;
+
+
+turnToPoint(58, 0, 750, {.minSpeed =20});
+waitd;
+
+moveToPoint(58, 0, 1000, {.maxSpeed =110});
+waitd;
+
+turnToPoint(57, 20, 850, {.forwards =false});
+liftTarget = 60000;
+waitd;
+
+moveToPoint(57, 20, 1000, {.forwards = false, .maxSpeed = 70});
+waitd;
+liftTarget = 45000;
+pros::delay(250);
+Claw.open();
+pros::delay(150);
+
+moveToPoint(48, 4, 1000);
+waitd;
+turnToAngle(135, 600);
+waitd;
+
 
 }
+
+void FarSplit3() {
+    setPose(56, 2, 0);
+  resetFront(); 
+  resetLeft();
+  togglePiston.set_value(true);
+  pros::delay(200);
+  moveToPoint(28.5, 51, 750, {.forwards = false, .maxSpeed =110});
+  liftTarget = 27500;
+  waitd;
+  togglePiston.set_value(false);
+
+liftTarget = 2000;
+pros::delay(400);
+Claw.open();
+pros::delay(150);
+
+moveToPoint(10.5, 57, 800);
+waitd;
+
+turnToPoint(19.25,61.25, 500, {.forwards = false});
+waitd;
+
+
+chassis.arcade(-65, -30);
+pros::delay(850);
+
+Claw.close();
+chassis.arcade(0,0);
+liftTarget = 40000;
+turnToPoint(2, 56, 550, {.minSpeed =10});
+waitd;
+
+moveToPoint(2, 56, 700);
+waitd;
+
+turnToPoint(22, 51, 500, {.forwards =false});
+waitd;
+
+moveToPoint(22, 51, 600, {.forwards = false, .maxSpeed = 80});
+waitd;
+liftTarget = 30000;
+turnToPoint(-17.5, 55, 750);
+liftTarget = 30000;
+pros::delay(300);
+Claw.open();
+pros::delay(150);
+waitd;
+
+moveToPoint(-17.5, 55, 1000);
+waitd;
+
+liftTarget = 2000;
+turnToPoint(-30 , 60, 800, {.forwards =false, .direction = AngularDirection::CW_CLOCKWISE});
+waitd;
+
+chassis.arcade(-60, 30);
+pros::delay(900);
+
+Claw.close();
+chassis.arcade(0,0);
+liftTarget = 20000;
+
+
+turnToPoint(0, 58, 750, {.minSpeed =20});
+waitd;
+
+moveToPoint(0, 58, 1000, {.maxSpeed =110});
+waitd;
+
+turnToPoint(20, 56, 850, {.forwards =false});
+liftTarget = 67500;
+waitd;
+
+moveToPoint(20,56, 1200, {.forwards = false, .maxSpeed = 70});
+waitd;
+liftTarget = 40000;
+pros::delay(400);
+
+}
+void pidTest() {}
+
 //string for the names of our autonomous list, used to display which auton is selected for both controller and brain selector.
 const char* autonomousNames[] = {
-    "CloseSplit",
-    "CloseElim ",
-    "FarSplit  ",
-    "FarElim   ",
-    "Skills    ",
-    "closeAwp  ",
-    "utilTest  ",
-    "None      ",
-    "NONE      ",
+    "CloseSplitLANE   ",
+    "CloseElim        ",
+    "FarSplitWALL     ",
+    "FarElim          ",
+    "Skills           ",
+    "closeWall3       ",
+    "CloseSplitWALL   ",
+    "None             ",
+    "FarSplitLane     ",
+    "FarSplit3",
 };
 
 //int determines which auton is ran.
-int selectedAuton =2;
+int selectedAuton =9;
 
 //case function which runs different autonomous routines based off the value of selectedAuton
 void chooseAuton() {
@@ -1249,7 +1451,7 @@ switch(selectedAuton) {
         Skills();
         break;
     case 5:
-       closeAwp();
+       closeWall3();
         break;
     case 6:
     CloseSplitWall();
@@ -1261,6 +1463,8 @@ switch(selectedAuton) {
         case 8:
         FarSplitLane();
         break;
+        case 9:
+        FarSplit3();
     default:
         selectedAuton = 0; // default to auton 0 if invalid selection
 }
@@ -1328,7 +1532,7 @@ void initialize() {
         });
        pros::Task liftTask(liftControlTask);//runs liftControlTask in a task to run the function is parallel to rest of program.
       
-     //   pros::Task autoClampTask(autoClamp);
+      pros::Task autoClampTask(autoClamp);
     }
 
 
